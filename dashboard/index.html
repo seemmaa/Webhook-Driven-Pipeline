@@ -29,6 +29,9 @@
       padding: 30px;
       border-radius: 12px;
       margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     header h1 {
@@ -38,6 +41,29 @@
 
     header p {
       opacity: 0.9;
+    }
+
+    .user-info {
+      text-align: right;
+    }
+
+    .user-email {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+
+    .logout-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255,255,255,0.3);
     }
 
     .stats {
@@ -258,97 +284,228 @@
     .toast.show {
       display: block;
     }
+
+    .auth-container {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .auth-box {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .auth-box h1 {
+      text-align: center;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .auth-box p {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      color: #666;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      font-weight: 500;
+    }
+
+    .auth-tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .switch-text {
+      text-align: center;
+      margin-top: 16px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .switch-text a {
+      color: #667eea;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .switch-text a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>🔗 Webhook Pipeline Dashboard</h1>
-      <p>Manage your webhooks, pipelines, and monitor job processing</p>
-    </header>
+  <!-- Auth Screen -->
+  <div id="authScreen" class="auth-container">
+    <div class="auth-box">
+      <h1>Webhook Pipeline</h1>
+      <p>Manage your webhooks and pipelines</p>
+      
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="loginTabBtn" onclick="showTab('login')">Login</div>
+        <div class="auth-tab" id="registerTabBtn" onclick="showTab('register')">Register</div>
+      </div>
 
-    <div class="stats">
-      <div class="stat-card">
-        <h3>Total Pipelines</h3>
-        <div class="value" id="pipelineCount">0</div>
+      <!-- Login Form -->
+      <div id="loginForm" class="tab-content active">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="Enter your email">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password">
+        </div>
+        <button onclick="handleLogin()" style="width: 100%;">Login</button>
+        <p class="switch-text">Don't have an account? <a onclick="showTab('register')">Register</a></p>
       </div>
-      <div class="stat-card">
-        <h3>Total Jobs</h3>
-        <div class="value" id="jobCount">0</div>
-      </div>
-      <div class="stat-card">
-        <h3>Completed</h3>
-        <div class="value" id="completedCount">0</div>
-      </div>
-      <div class="stat-card">
-        <h3>Failed</h3>
-        <div class="value" id="failedCount">0</div>
-      </div>
-    </div>
 
-    <div class="section">
-      <div class="section-header">
-        <h2>🚀 Pipelines</h2>
-        <button onclick="openCreatePipeline()">+ Create Pipeline</button>
-      </div>
-      <div id="pipelinesList">
-        <div class="empty-state">No pipelines yet. Create one to get started!</div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-header">
-        <h2>📋 Recent Jobs</h2>
-        <button class="secondary" onclick="loadJobs()">Refresh</button>
-      </div>
-      <div id="jobsList">
-        <div class="empty-state">No jobs processed yet.</div>
+      <!-- Register Form -->
+      <div id="registerForm" class="tab-content">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="registerEmail" placeholder="Enter your email">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="registerPassword" placeholder="Create a password" minlength="6">
+        </div>
+        <button onclick="handleRegister()" style="width: 100%;">Register</button>
+        <p class="switch-text">Already have an account? <a onclick="showTab('login')">Login</a></p>
       </div>
     </div>
   </div>
 
-  <!-- Create Pipeline Modal -->
-  <div class="modal" id="createPipelineModal">
-    <div class="modal-content">
-      <h2>Create Pipeline</h2>
-      <div class="form-group">
-        <label>Pipeline Name</label>
-        <input type="text" id="pipelineName" placeholder="e.g., My Webhook Handler">
+  <!-- Dashboard -->
+  <div id="dashboardScreen" class="hidden">
+    <div class="container">
+      <header>
+        <div>
+          <h1>Webhook Pipeline Dashboard</h1>
+          <p>Manage your webhooks, pipelines, and monitor job processing</p>
+        </div>
+        <div class="user-info">
+          <div class="user-email" id="userEmail">user@example.com</div>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+      </header>
+
+      <div class="stats">
+        <div class="stat-card">
+          <h3>Total Pipelines</h3>
+          <div class="value" id="pipelineCount">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Total Jobs</h3>
+          <div class="value" id="jobCount">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Completed</h3>
+          <div class="value" id="completedCount">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Failed</h3>
+          <div class="value" id="failedCount">0</div>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Action Type</label>
-        <select id="actionType">
-          <option value="transform">Transform (uppercase/lowercase/compact)</option>
-          <option value="filter">Filter (select specific fields)</option>
-          <option value="enrich">Enrich (add metadata)</option>
-        </select>
+
+      <div class="section">
+        <div class="section-header">
+          <h2>Pipelines</h2>
+          <button onclick="openCreatePipeline()">+ Create Pipeline</button>
+        </div>
+        <div id="pipelinesList">
+          <div class="empty-state">No pipelines yet. Create one to get started!</div>
+        </div>
       </div>
-      <div class="modal-buttons">
-        <button onclick="createPipeline()">Create</button>
-        <button class="secondary" onclick="closeModal()">Cancel</button>
+
+      <div class="section">
+        <div class="section-header">
+          <h2>Recent Jobs</h2>
+          <button class="secondary" onclick="loadJobs()">Refresh</button>
+        </div>
+        <div id="jobsList">
+          <div class="empty-state">No jobs processed yet.</div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Pipeline Detail Modal -->
-  <div class="modal" id="pipelineDetailModal">
-    <div class="modal-content">
-      <h2 id="detailPipelineName">Pipeline Details</h2>
-      <p style="margin-bottom: 8px; color: #666; font-size: 14px;">Webhook URL:</p>
-      <div class="webhook-url" id="detailWebhookUrl"></div>
-      <button class="secondary copy-btn" onclick="copyWebhookUrl()" style="margin-top: 12px;">Copy URL</button>
-      
-      <h3 style="margin-top: 24px; margin-bottom: 12px;">Add Subscriber</h3>
-      <div class="form-group">
-        <label>Subscriber URL</label>
-        <input type="text" id="subscriberUrl" placeholder="https://example.com/webhook">
+    <!-- Create Pipeline Modal -->
+    <div class="modal" id="createPipelineModal">
+      <div class="modal-content">
+        <h2>Create Pipeline</h2>
+        <div class="form-group">
+          <label>Pipeline Name</label>
+          <input type="text" id="pipelineName" placeholder="e.g., My Webhook Handler">
+        </div>
+        <div class="form-group">
+          <label>Action Type</label>
+          <select id="actionType">
+            <option value="transform">Transform (uppercase/lowercase/compact)</option>
+            <option value="filter">Filter (select specific fields)</option>
+            <option value="enrich">Enrich (add metadata)</option>
+          </select>
+        </div>
+        <div class="modal-buttons">
+          <button onclick="createPipeline()">Create</button>
+          <button class="secondary" onclick="closeModal()">Cancel</button>
+        </div>
       </div>
-      <button onclick="addSubscriber()">Add Subscriber</button>
-      
-      <div id="subscribersList" style="margin-top: 20px;"></div>
-      
-      <div class="modal-buttons">
-        <button class="secondary" onclick="closeDetailModal()">Close</button>
+    </div>
+
+    <!-- Pipeline Detail Modal -->
+    <div class="modal" id="pipelineDetailModal">
+      <div class="modal-content">
+        <h2 id="detailPipelineName">Pipeline Details</h2>
+        <p style="margin-bottom: 8px; color: #666; font-size: 14px;">Webhook URL:</p>
+        <div class="webhook-url" id="detailWebhookUrl"></div>
+        <button class="secondary copy-btn" onclick="copyWebhookUrl()" style="margin-top: 12px;">Copy URL</button>
+        
+        <h3 style="margin-top: 24px; margin-bottom: 12px;">Add Subscriber</h3>
+        <div class="form-group">
+          <label>Subscriber URL</label>
+          <input type="text" id="subscriberUrl" placeholder="https://example.com/webhook">
+        </div>
+        <button onclick="addSubscriber()">Add Subscriber</button>
+        
+        <div id="subscribersList" style="margin-top: 20px;"></div>
+        
+        <div class="modal-buttons">
+          <button class="secondary" onclick="closeDetailModal()">Close</button>
+        </div>
       </div>
     </div>
   </div>
@@ -359,6 +516,8 @@
   <script>
     const API_URL = window.location.origin;
     let currentPipelineId = null;
+    let authToken = localStorage.getItem('token');
+    let userEmail = localStorage.getItem('email');
 
     function showToast(message, isError = false) {
       const toast = document.getElementById('toast');
@@ -368,15 +527,139 @@
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
+    function showTab(tab) {
+      document.getElementById('loginTabBtn').classList.remove('active');
+      document.getElementById('registerTabBtn').classList.remove('active');
+      document.getElementById('loginForm').classList.remove('active');
+      document.getElementById('registerForm').classList.remove('active');
+      
+      if (tab === 'login') {
+        document.getElementById('loginTabBtn').classList.add('active');
+        document.getElementById('loginForm').classList.add('active');
+      } else {
+        document.getElementById('registerTabBtn').classList.add('active');
+        document.getElementById('registerForm').classList.add('active');
+      }
+    }
+
+    function checkAuth() {
+      if (authToken) {
+        document.getElementById('authScreen').classList.add('hidden');
+        document.getElementById('dashboardScreen').classList.remove('hidden');
+        document.getElementById('userEmail').textContent = userEmail || 'user@example.com';
+        loadPipelines();
+        loadJobs();
+      } else {
+        document.getElementById('authScreen').classList.remove('hidden');
+        document.getElementById('dashboardScreen').classList.add('hidden');
+      }
+    }
+
+    async function handleLogin() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      if (!email || !password) {
+        showToast('Please fill in all fields', true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.token) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('email', email);
+          authToken = data.token;
+          userEmail = email;
+          showToast('Login successful!');
+          checkAuth();
+          document.getElementById('loginEmail').value = '';
+          document.getElementById('loginPassword').value = '';
+        } else {
+          showToast(data.message || 'Login failed', true);
+        }
+      } catch (err) {
+        showToast('Login failed', true);
+      }
+    }
+
+    async function handleRegister() {
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+
+      if (!email || !password) {
+        showToast('Please fill in all fields', true);
+        return;
+      }
+
+      if (password.length < 6) {
+        showToast('Password must be at least 6 characters', true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (res.ok) {
+          showToast('Registration successful! Please login.');
+          showTab('login');
+          document.getElementById('registerEmail').value = '';
+          document.getElementById('registerPassword').value = '';
+          document.getElementById('loginEmail').value = email;
+        } else {
+          const data = await res.json();
+          showToast(data.error || 'Registration failed', true);
+        }
+      } catch (err) {
+        showToast('Registration failed', true);
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('email');
+      authToken = null;
+      userEmail = null;
+      showToast('Logged out successfully');
+      checkAuth();
+    }
+
+    function getHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': authToken ? `Bearer ${authToken}` : ''
+      };
+    }
+
     async function loadPipelines() {
       try {
-        const res = await fetch(`${API_URL}/pipelines`);
+        const res = await fetch(`${API_URL}/pipelines`, {
+          headers: getHeaders()
+        });
         const pipelines = await res.json();
+        
+        if (!res.ok) {
+          if (res.status === 401) {
+            logout();
+          }
+          return;
+        }
         
         document.getElementById('pipelineCount').textContent = pipelines.length;
         
         const list = document.getElementById('pipelinesList');
-        if (pipelines.length === 0) {
+        if (!pipelines.length) {
           list.innerHTML = '<div class="empty-state">No pipelines yet. Create one to get started!</div>';
           return;
         }
@@ -415,15 +698,22 @@
 
     async function loadJobs() {
       try {
-        const res = await fetch(`${API_URL}/jobs`);
+        const res = await fetch(`${API_URL}/jobs`, {
+          headers: getHeaders()
+        });
         const jobs = await res.json();
+        
+        if (!res.ok && res.status === 401) {
+          logout();
+          return;
+        }
         
         document.getElementById('jobCount').textContent = jobs.length;
         document.getElementById('completedCount').textContent = jobs.filter(j => j.status === 'completed').length;
         document.getElementById('failedCount').textContent = jobs.filter(j => j.status === 'failed' || j.status === 'partial_failure').length;
         
         const list = document.getElementById('jobsList');
-        if (jobs.length === 0) {
+        if (!jobs.length) {
           list.innerHTML = '<div class="empty-state">No jobs processed yet.</div>';
           return;
         }
@@ -477,7 +767,7 @@
       try {
         const res = await fetch(`${API_URL}/pipelines`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({ name, actionType })
         });
         
@@ -500,7 +790,10 @@
       if (!confirm('Are you sure you want to delete this pipeline?')) return;
       
       try {
-        const res = await fetch(`${API_URL}/pipelines/${id}`, { method: 'DELETE' });
+        const res = await fetch(`${API_URL}/pipelines/${id}`, { 
+          method: 'DELETE',
+          headers: getHeaders()
+        });
         if (res.ok) {
           showToast('Pipeline deleted');
           loadPipelines();
@@ -533,11 +826,13 @@
 
     async function loadSubscribers(pipelineId) {
       try {
-        const res = await fetch(`${API_URL}/subscribers/${pipelineId}`);
+        const res = await fetch(`${API_URL}/subscribers/${pipelineId}`, {
+          headers: getHeaders()
+        });
         const subscribers = await res.json();
         
         const list = document.getElementById('subscribersList');
-        if (subscribers.length === 0) {
+        if (!subscribers || !subscribers.length) {
           list.innerHTML = '<p style="color: #666; font-size: 14px;">No subscribers yet.</p>';
           return;
         }
@@ -564,7 +859,7 @@
       try {
         const res = await fetch(`${API_URL}/subscribers/${currentPipelineId}`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({ url })
         });
         
@@ -580,14 +875,13 @@
       }
     }
 
-    // Initial load
-    loadPipelines();
-    loadJobs();
+    checkAuth();
 
-    // Auto refresh every 10 seconds
     setInterval(() => {
-      loadPipelines();
-      loadJobs();
+      if (authToken) {
+        loadPipelines();
+        loadJobs();
+      }
     }, 10000);
   </script>
 </body>

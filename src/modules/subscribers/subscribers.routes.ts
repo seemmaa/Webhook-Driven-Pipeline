@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { addSubscriber } from "./subscribers.controller";
+import { addSubscriber, getSubscribersByPipeline } from "./subscribers.controller";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.post("/:pipelineId", addSubscriber);
+router.post("/:pipelineId", authMiddleware, addSubscriber);
+router.get("/:pipelineId", authMiddleware, getSubscribersByPipeline);
 
 export default router;
