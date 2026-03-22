@@ -131,6 +131,7 @@ const worker = new Worker(
     }
 
     const actionType = pipeline[0].actionType;
+    const options = pipeline[0].options as Record<string, unknown> || {};
     const actionFn = processingActions[actionType as keyof typeof processingActions];
 
     if (!actionFn) {
@@ -138,7 +139,7 @@ const worker = new Worker(
       throw new Error(`Unknown action type: ${actionType}`);
     }
 
-    const processedData = await actionFn(payload, {});
+    const processedData = await actionFn(payload, options);
 
     const deliveryResults = await deliverToSubscribers(pipelineId, processedData);
 

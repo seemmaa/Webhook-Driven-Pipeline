@@ -473,12 +473,37 @@
         </div>
         <div class="form-group">
           <label>Action Type</label>
-          <select id="actionType">
+          <select id="actionType" onchange="toggleOptions()">
             <option value="transform">Transform (uppercase/lowercase/compact)</option>
             <option value="filter">Filter (select specific fields)</option>
             <option value="enrich">Enrich (add metadata)</option>
           </select>
         </div>
+        
+        <!-- Options for Transform -->
+        <div id="transformOptions" class="form-group">
+          <label>Transformation Type</label>
+          <select id="transformType">
+            <option value="uppercase">Uppercase (convert strings to UPPERCASE)</option>
+            <option value="lowercase">Lowercase (convert strings to lowercase)</option>
+            <option value="compact">Compact (remove null/empty values)</option>
+          </select>
+        </div>
+        
+        <!-- Options for Filter -->
+        <div id="filterOptions" class="form-group" style="display: none;">
+          <label>Fields to Keep (comma separated)</label>
+          <input type="text" id="filterFields" placeholder="e.g., name, email, amount">
+          <p style="font-size: 12px; color: #888; margin-top: 4px;">Only these fields will be included in the output</p>
+        </div>
+        
+        <!-- Options for Enrich -->
+        <div id="enrichOptions" class="form-group" style="display: none;">
+          <label>Custom Enrichments (JSON, optional)</label>
+          <input type="text" id="enrichments" placeholder='{"source": "webhook"}'>
+          <p style="font-size: 12px; color: #888; margin-top: 4px;">Add custom key-value pairs to the data</p>
+        </div>
+        
         <div class="modal-buttons">
           <button onclick="createPipeline()">Create</button>
           <button class="secondary" onclick="closeModal()">Cancel</button>
@@ -749,10 +774,18 @@
 
     function openCreatePipeline() {
       document.getElementById('createPipelineModal').classList.add('active');
+      toggleOptions();
     }
 
     function closeModal() {
       document.getElementById('createPipelineModal').classList.remove('active');
+    }
+
+    function toggleOptions() {
+      const actionType = document.getElementById('actionType').value;
+      document.getElementById('transformOptions').style.display = actionType === 'transform' ? 'block' : 'none';
+      document.getElementById('filterOptions').style.display = actionType === 'filter' ? 'block' : 'none';
+      document.getElementById('enrichOptions').style.display = actionType === 'enrich' ? 'block' : 'none';
     }
 
     async function createPipeline() {
@@ -764,11 +797,30 @@
         return;
       }
       
+      let options = {};
+      
+      if (actionType === 'transform') {
+        options = {
+          transformation: document.getElementById('transformType').value
+        };
+      } else if (actionType === 'filter') {
+        const fieldsStr = document.getElementById('filterFields').value;
+        const fields = fieldsStr.split(',').map(f => f.trim()).filter(f => f);
+        options = { fields };
+      } else if (actionType === 'enrich') {
+        const enrichmentsStr = document.getElementById('enrichments').value;
+        try {
+          options = enrichmentsStr ? JSON.parse(enrichmentsStr) : {};
+        } catch {
+          options = {};
+        }
+      }
+      
       try {
         const res = await fetch(`${API_URL}/pipelines`, {
           method: 'POST',
           headers: getHeaders(),
-          body: JSON.stringify({ name, actionType })
+          body: JSON.stringify({ name, actionType, options })
         });
         
         const data = await res.json();
@@ -777,6 +829,8 @@
           showToast('Pipeline created successfully!');
           closeModal();
           document.getElementById('pipelineName').value = '';
+          document.getElementById('filterFields').value = '';
+          document.getElementById('enrichments').value = '';
           loadPipelines();
         } else {
           showToast(data.message || 'Failed to create pipeline', true);

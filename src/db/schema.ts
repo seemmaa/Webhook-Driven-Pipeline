@@ -5,6 +5,7 @@ export const pipelines = pgTable("pipelines", {
   name: text("name").notNull(),
   webhookKey: text("webhook_key").notNull(),
   actionType: text("action_type").notNull(),
+  options: json("options"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

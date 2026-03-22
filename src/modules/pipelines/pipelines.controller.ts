@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 
 export const createPipeline = async (req: Request, res: Response) => {
   try {
-    const { name, actionType } = req.body;
+    const { name, actionType, options } = req.body;
 
     if (!name || !actionType) {
       return res.status(400).json({
@@ -19,7 +19,8 @@ export const createPipeline = async (req: Request, res: Response) => {
     const result = await db.insert(pipelines).values({
       name,
       actionType,
-      webhookKey
+      webhookKey,
+      options: options || {}
     }).returning();
 
     const pipeline = result[0];
