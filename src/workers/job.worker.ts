@@ -60,7 +60,7 @@ const processingActions = {
   },
 
   enrich: async (data: Record<string, unknown>, options?: Record<string, unknown>) => {
-    const enrichments = (options?.enrichments as Record<string, unknown>) || {};
+    const enrichments = options || {};
     
     return {
       ...data,
@@ -68,8 +68,64 @@ const processingActions = {
       _enriched: true,
       _enrichedAt: new Date().toISOString()
     };
+  },
+
+  slack: async (data: Record<string, unknown>, options?: Record<string, unknown>) => {
+    const title = (options?.title as string) || "Webhook Received";
+    const emoji = (options?.emoji as string) || ":incoming_envelope:";
+    const color = (options?.color as string) || "#36a64f";
+    
+    const fields = Object.entries(data).map(([key, value]) => ({
+      type: "mrkdwn" as const,
+      text: `*${formatSlackText(key)}:*\n${formatSlackText(String(value))}`
+    }));
+    
+    const blocks = [
+      {
+        type: "header" as const,
+        text: {
+          type: "plain_text" as const,
+          text: `${emoji} ${title}`,
+          emoji: true
+        }
+      },
+      {
+        type: "section",
+        fields: fields.slice(0, 10)
+      },
+      {
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: `*Processed:* ${new Date().toISOString()}`
+          }
+        ]
+      }
+    ];
+    
+    return {
+      blocks,
+      text: `${emoji} ${title}`,
+      attachments: [
+        {
+          color: color,
+          blocks: blocks
+        }
+      ]
+    };
   }
 };
+
+function formatSlackText(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/_/g, "\_")
+    .replace(/\*/g, "\\*")
+    .replace(/~/g, "\\~");
+}
 
 async function updateJobStatus(jobId: string, status: string) {
   await db.update(jobs)

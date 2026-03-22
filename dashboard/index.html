@@ -477,6 +477,7 @@
             <option value="transform">Transform (uppercase/lowercase/compact)</option>
             <option value="filter">Filter (select specific fields)</option>
             <option value="enrich">Enrich (add metadata)</option>
+            <option value="slack">Slack Message (send to Slack)</option>
           </select>
         </div>
         
@@ -502,6 +503,33 @@
           <label>Custom Enrichments (JSON, optional)</label>
           <input type="text" id="enrichments" placeholder='{"source": "webhook"}'>
           <p style="font-size: 12px; color: #888; margin-top: 4px;">Add custom key-value pairs to the data</p>
+        </div>
+        
+        <!-- Options for Slack -->
+        <div id="slackOptions" class="form-group" style="display: none;">
+          <label>Slack Message Title</label>
+          <input type="text" id="slackTitle" placeholder="e.g., New Order Received">
+          <label style="margin-top: 12px;">Emoji</label>
+          <select id="slackEmoji">
+            <option value=":incoming_envelope:">📥 Incoming</option>
+            <option value=":white_check_mark:">✅ Success</option>
+            <option value=":warning:">⚠️ Warning</option>
+            <option value=":x:">❌ Error</option>
+            <option value=":moneybag:">💰 Money</option>
+            <option value=":bell:">🔔 Alert</option>
+            <option value=":rocket:">🚀 Rocket</option>
+          </select>
+          <label style="margin-top: 12px;">Color</label>
+          <select id="slackColor">
+            <option value="#36a64f">🟢 Green</option>
+            <option value="#2196F3">🔵 Blue</option>
+            <option value="#FF9800">🟠 Orange</option>
+            <option value="#F44336">🔴 Red</option>
+            <option value="#9C27B0">🟣 Purple</option>
+          </select>
+          <p style="font-size: 12px; color: #888; margin-top: 8px;">
+            ⚠️ For Slack, add your Slack Webhook URL as a subscriber
+          </p>
         </div>
         
         <div class="modal-buttons">
@@ -786,6 +814,7 @@
       document.getElementById('transformOptions').style.display = actionType === 'transform' ? 'block' : 'none';
       document.getElementById('filterOptions').style.display = actionType === 'filter' ? 'block' : 'none';
       document.getElementById('enrichOptions').style.display = actionType === 'enrich' ? 'block' : 'none';
+      document.getElementById('slackOptions').style.display = actionType === 'slack' ? 'block' : 'none';
     }
 
     async function createPipeline() {
@@ -814,6 +843,12 @@
         } catch {
           options = {};
         }
+      } else if (actionType === 'slack') {
+        options = {
+          title: document.getElementById('slackTitle').value || 'Webhook Received',
+          emoji: document.getElementById('slackEmoji').value,
+          color: document.getElementById('slackColor').value
+        };
       }
       
       try {
@@ -831,6 +866,7 @@
           document.getElementById('pipelineName').value = '';
           document.getElementById('filterFields').value = '';
           document.getElementById('enrichments').value = '';
+          document.getElementById('slackTitle').value = '';
           loadPipelines();
         } else {
           showToast(data.message || 'Failed to create pipeline', true);
