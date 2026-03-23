@@ -77,7 +77,7 @@ const processingActions = {
     
     const fields = Object.entries(data).map(([key, value]) => ({
       type: "mrkdwn" as const,
-      text: `*${formatSlackText(key)}:*\n${formatSlackText(String(value))}`
+      text: `*${formatSlackText(key)}:* ${formatSlackText(String(value))}`
     }));
     
     const blocks = [
@@ -98,7 +98,7 @@ const processingActions = {
         elements: [
           {
             type: "mrkdwn",
-            text: `*Processed:* ${new Date().toISOString()}`
+            text: `*Processed:* <!date^${Math.floor(Date.now()/1000)}^{date_short_pretty} {time}|now>`
           }
         ]
       }

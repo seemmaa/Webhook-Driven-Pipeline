@@ -928,9 +928,9 @@
         }
         
         list.innerHTML = `
-          <h4 style="margin-bottom: 8px;">Subscribers (${subscribers.length})</h4>
+          <h4 style="margin-bottom: 8px ;">Subscribers (${subscribers.length})</h4>
           <ul style="list-style: none;">
-            ${subscribers.map(s => `<li style="padding: 8px 0; border-bottom: 1px solid #eee;">${s.url}</li>`).join('')}
+            ${subscribers.map(s => `<li style="padding: 8px 0; border-bottom: 1px solid #eee ;  word-break: break-all;">${s.url}</li>`).join('')}
           </ul>
         `;
       } catch (err) {
