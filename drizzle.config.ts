@@ -5,6 +5,6 @@ export default {
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
-    url:  "postgresql://postgres:postgres@localhost:5432/webhook_db",
+    url: process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/webhook_db",
   },
 } satisfies Config;
